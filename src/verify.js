@@ -9,8 +9,8 @@ const getJWT = (request) => {
 	return authHeader.substring(6).trim();
 };
 
-const verifyRequestAuthToken = async (request, jwksURL) => {
-	const token = getJWT(request);
+const verifyRequestAuthToken = async (token, jwksURL) => {
+	// const token = getJWT(request);
 
 	if (!token) {
 		return new Response('Request is missing a required authentication token', { status: 400, statusText: "Bad Request" });

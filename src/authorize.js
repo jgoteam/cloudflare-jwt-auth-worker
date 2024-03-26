@@ -5,7 +5,6 @@ import { calculateJwkThumbprint, SignJWT, exportJWK, importPKCS8, importSPKI } f
 // Private Key is in PKCS8 format
 const generateJWKS = async (env) => {
 	const publicKey = await importSPKI(env.publicJwtKey, 'RS256');
-	console.log(publicKey);
 	const publicJwk = await exportJWK(publicKey);
 	const publicJwkThumbprint = await calculateJwkThumbprint(publicJwk);
 	const jwksObj = {
