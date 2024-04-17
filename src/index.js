@@ -1,7 +1,14 @@
 import { generateToken } from './authorize.js';
 import { verifyRequestAuthToken } from './verify.js';
 
+// This is a sample Cloudflare JWT Auth Worker template, and is for demonstration purposes only.
+// It clearly does not follow security best practices.
 const allowedOrigin = '*';
+
+// Instead of a simple in-memory object, valid credentials should be hashed and stored in a secure DB
+const validCredentials = {
+	foobar: 'cats',
+};
 
 export default {
 	// /authorize path to generate new tokens
@@ -32,10 +39,25 @@ export default {
 
 		switch (url.pathname) {
 			case '/authorize':
-				const generatedToken = await generateToken(env);
-				return Response.json(generatedToken, corsHeaders);
+				const requestHeaders = await request.headers;
+				const jsonHeader = requestHeaders.get('content-type') === 'application/json';
+
+				if (requestHeaders && jsonHeader) {
+					const { username, password } = await request.json();
+
+					if (validCredentials[username] === password) {
+						console.log('valid password');
+						const generatedToken = await generateToken(env);
+						return Response.json(generatedToken, corsHeaders);
+					} else {
+						return new Response('Missing or Invalid Credentials Provided', { status: 401, statusText: 'Unauthorized' });
+					}
+				} else {
+					return new Response('Missing or Invalid Credentials Provided', { status: 401, statusText: 'Unauthorized' });
+				}
+
 			case '/verify':
-				const queriedToken = new URL(request.url).searchParams.get('token') ?? "";
+				const queriedToken = new URL(request.url).searchParams.get('token') ?? '';
 				let response = await verifyRequestAuthToken(queriedToken, jwksURL);
 				response.headers.set('Access-Control-Allow-Origin', allowedOrigin);
 				response.headers.set('Access-Control-Allow-Credentials', 'true');
